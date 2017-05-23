@@ -5,3 +5,23 @@
 
 
 // SETCURRENTDIR("Media") // go to media files
+
+main()
+
+FUNCTION main:
+
+	basicInitial()
+
+	WHILE TRUE
+	
+		SHOWSCREEN
+	WEND
+
+ENDFUNCTION
+
+FUNCTION basicInitial:
+
+	AUTOPAUSE FALSE
+	SYSTEMPOINTER TRUE
+
+ENDFUNCTION
