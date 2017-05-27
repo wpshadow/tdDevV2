@@ -29,7 +29,13 @@ TYPE mouse_TYPE
 
 ENDTYPE
 
-GLOBAL mouse AS mouse_TYPE, screenResolutions[] AS screenResolutions_TYPE
+TYPE system_TYPE
+	resolution_x
+	resolution_y
+	fullscreen
+ENDTYPE
+
+GLOBAL mouse AS mouse_TYPE, screenResolutions[] AS screenResolutions_TYPE, system AS system_TYPE
 
 main()
 
@@ -42,9 +48,7 @@ FUNCTION main:
 
 		system_mouse()
 		
-		PRINT screenResolutions[0].x + " " + screenResolutions[0].y, 0, 0
-
-		//PRINT mouse.getX() + " " + mouse.getY(), 0, 0
+		
 
 		SHOWSCREEN
 	WEND
@@ -122,6 +126,7 @@ ENDFUNCTION
 FUNCTION loadOptions:
 LOCAL path$, pathFound, resFileFound
 LOCAL count, tmp, tmp$, name$, content$, resolutions$[]
+LOCAL optionsFound, resX, resY
 
 	path$ = PLATFORMINFO$("DOCUMENTS") + "/tdDrone"
 	
@@ -159,6 +164,43 @@ LOCAL count, tmp, tmp$, name$, content$, resolutions$[]
 		INIOPEN ""
 
 	ENDIF
+	
+	optionsFound = DOESFILEEXIST(path$ + "/" + "options.ini")
+	
+	IF optionsFound = FALSE
+		
+		INIOPEN path$ + "/" + "options.ini"
+			
+			INIPUT "options", "resolution_x", "1024"
+			INIPUT "options", "resolution_y", "768"
+			INIPUT "options", "fullscreen", "0"
+			
+		INIOPEN ""
+		
+		optionsFound = TRUE
+	
+	ENDIF
+	
+	IF optionsFound = TRUE
+		
+		INIOPEN path$ + "/" + "options.ini"
+			
+			resX = INIGET$("options", "resolution_x")
+			resY = INIGET$("options", "resolution_y")
+			
+			FOREACH s IN screenResolutions[]
+				
+				IF resX = s.x AND resY = s.y
+					BREAK
+				ENDIF
+				
+			NEXT
+			
+		INIOPEN ""
+	
+	ENDIF
+	
+	DEBUG optionsFound
 	
 
 
