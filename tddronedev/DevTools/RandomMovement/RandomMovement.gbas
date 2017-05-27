@@ -1,0 +1,61 @@
+// --------------------------------- //
+// Project: RandomMovement
+// Start: Tuesday, May 23, 2017
+// IDE Version: 14.497
+
+
+// SETCURRENTDIR("Media") // go to media files
+
+
+
+main()
+
+FUNCTION main:
+
+	WHILE TRUE
+		
+		drawIt(0, 0, 14)
+
+
+		SHOWSCREEN
+	WEND
+
+ENDFUNCTION
+
+FUNCTION drawIt: posX, posY, size
+STATIC oldTimer, offsetX, offsetY, initial
+LOCAL direction
+
+	IF initial = FALSE
+		
+		offsetX = (32 / 2) - (size / 2)
+		offsetY = (32 / 2) - (size / 2)
+		
+		initial = TRUE
+	ENDIF
+	
+	IF GETTIMERALL() >= oldTimer
+				
+		direction = RND(3)
+		
+		SELECT direction
+		CASE 0
+			INC offsetX, 1
+			IF offsetX > 32 - size THEN DEC offsetX, 2
+		CASE 1
+			INC offsetY, 1
+			IF offsetY > 32 - size THEN DEC offsetY, 2
+		CASE 2
+			DEC offsetX, 1
+			IF offsetX < 0 THEN INC offsetX, 2
+		CASE 3
+			DEC offsetY, 1
+			IF offsetY < 0 THEN INC offsetY, 2
+		ENDSELECT
+					
+		oldTimer = GETTIMERALL() + 100
+	ENDIF
+	
+	DRAWRECT posX + offsetX, posY + offsetY, size, size, RGB(128 + RND(255), 195, 0)
+
+ENDFUNCTION
