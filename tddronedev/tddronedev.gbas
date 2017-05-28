@@ -6,6 +6,25 @@
 
 // SETCURRENTDIR("Media") // go to media files
 
+TYPE position_TYPE
+	x
+	y
+ENDTYPE
+
+TYPE camera_TYPE
+	positon AS position_TYPE
+ENDTYPE
+
+TYPE mapTiles_TYPE
+
+ENDTYPE
+
+TYPE map_TYPE
+	sizeX
+	sizeY
+	tileSize
+ENDTYPE
+
 TYPE screenResolutions_TYPE
 	x
 	y
@@ -35,7 +54,7 @@ TYPE system_TYPE
 	fullscreen
 ENDTYPE
 
-GLOBAL mouse AS mouse_TYPE, screenResolutions[] AS screenResolutions_TYPE, system AS system_TYPE
+GLOBAL mouse AS mouse_TYPE, screenResolutions[] AS screenResolutions_TYPE, system AS system_TYPE, map AS map_TYPE, mapTiles[] AS mapTiles_TYPE, mapFind[]
 
 main()
 
@@ -43,12 +62,14 @@ FUNCTION main:
 
 	system_basicInitial()
 	system_loadOptions()
+	
+	map_setMapSize(10, 10)
 
 	WHILE TRUE
 
 		system_mouse()
 
-
+		map_drawMap()
 
 		SHOWSCREEN
 	WEND
@@ -57,8 +78,8 @@ ENDFUNCTION
 
 FUNCTION system_:
 // ===================================
-// ##### #   # ##### ##### ##### ## ##
-// #      # #  #       #   #     # # #
+// ##### #   # ##### ##### ##### #   #
+// #      # #  #       #   #     ## ##
 // #####   #   #####   #   ##### # # #
 //     #   #       #   #   #     # # #
 // #####   #   #####   #   ##### # # #
@@ -69,6 +90,8 @@ FUNCTION system_basicInitial:
 
 	AUTOPAUSE FALSE
 	SYSTEMPOINTER TRUE
+
+	map.tileSize = 32
 
 ENDFUNCTION
 
@@ -200,7 +223,7 @@ LOCAL optionsFound, resX, resY, resFound, full
 			full = INIGET$("options", "fullscreen")
 
 		INIOPEN ""
-		
+
 		FOREACH s IN screenResolutions[]
 
 			IF resX = s.x AND resY = s.y
@@ -209,20 +232,20 @@ LOCAL optionsFound, resX, resY, resFound, full
 			ENDIF
 
 		NEXT
-		
+
 		IF resFound = FALSE
 			system.resolution_x = 1024
 			system.resolution_y = 768
 			system.fullscreen = FALSE
-			
+
 			INIOPEN path$ + "/" + "options.ini"
 				INIPUT "options", "resolution_x", system.resolution_x
 				INIPUT "options", "resolution_y", system.resolution_y
 				INIPUT "options", "fullscreen", system.fullscreen
-			INIOPEN ""	
-			
+			INIOPEN ""
+
 		ENDIF
-		
+
 		IF resFound = TRUE
 			system.resolution_x = resX
 			system.resolution_y = resY
@@ -246,5 +269,46 @@ LOCAL s AS screenResolutions_TYPE
 	s.y = resY
 
 	DIMPUSH screenResolutions[], s
+
+ENDFUNCTION
+
+FUNCTION map_:
+// =================
+// #   #   #   ####
+// ## ##  # #  #   #
+// # # # #   # ####
+// # # # ##### #
+// # # # #   # #
+// =================
+ENDFUNCTION
+
+FUNCTION map_setMapSize: sizeX, sizeY
+
+	IF sizeX <  10 THEN sizeX =  10
+	IF sizeY <  10 THEN sizeY =  10
+	
+	IF sizeX > 100 THEN sizeX = 100
+	IF sizeY > 100 THEN sizeY = 100
+
+	DIM mapTiles[sizeX][sizeY]
+	DIM mapFind[sizeX][sizeY]
+
+	map.sizeX = sizeX
+	map.sizeY = sizeY
+
+ENDFUNCTION
+
+FUNCTION map_setMapTile: layer, positionX, positionY, id
+
+ENDFUNCTION
+
+FUNCTION map_drawMap:
+LOCAL tmpX, tmpY
+
+	FOR tmpY = 0 TO map.sizeY - 1
+		FOR tmpX = 0 TO map.sizeX - 1
+			DRAWRECT 0 + (tmpX * map.tileSize), 0 + (tmpY * map.tileSize), map.tileSize, map.tileSize, RGB(255, 255, 255)
+		NEXT
+	NEXT
 
 ENDFUNCTION
