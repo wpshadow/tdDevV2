@@ -7,7 +7,7 @@
 // SETCURRENTDIR("Media") // go to media files
 
 TYPE screenResolutions_TYPE
-	x	
+	x
 	y
 ENDTYPE
 
@@ -41,21 +41,31 @@ main()
 
 FUNCTION main:
 
-	basicInitial()
-	loadOptions()
+	system_basicInitial()
+	system_loadOptions()
 
 	WHILE TRUE
 
 		system_mouse()
-		
-		
+
+
 
 		SHOWSCREEN
 	WEND
 
 ENDFUNCTION
 
-FUNCTION basicInitial:
+FUNCTION system_:
+// ===================================
+// ##### #   # ##### ##### ##### ## ##
+// #      # #  #       #   #     # # #
+// #####   #   #####   #   ##### # # #
+//     #   #       #   #   #     # # #
+// #####   #   #####   #   ##### # # #
+// ===================================
+ENDFUNCTION
+
+FUNCTION system_basicInitial:
 
 	AUTOPAUSE FALSE
 	SYSTEMPOINTER TRUE
@@ -106,7 +116,7 @@ STATIC b1_tmp, b2_tmp, press_init, press_timer_old
 
 ENDFUNCTION
 
-FUNCTION fpsCounter:
+FUNCTION system_fpsCounter:
 LOCAL dtime, fps, delay, showfps
 
 	 dtime = GETTIMER()
@@ -123,128 +133,118 @@ LOCAL dtime, fps, delay, showfps
 
 ENDFUNCTION
 
-FUNCTION loadOptions:
+FUNCTION system_loadOptions:
 LOCAL path$, pathFound, resFileFound
 LOCAL count, tmp, tmp$, name$, content$, resolutions$[]
-LOCAL optionsFound, resX, resY
+LOCAL optionsFound, resX, resY, resFound, full
 
 	path$ = PLATFORMINFO$("DOCUMENTS") + "/tdDrone"
-	
+
 	pathFound = DOESDIREXIST(path$)
-	
+
 	IF pathFound = FALSE
-	
+
 		CREATEDIR(path$)
 		pathFound = DOESDIREXIST(path$)
-	
+
 	ENDIF
-	
+
 	resFileFound = DOESFILEEXIST("data/systemInfos.ini")
-	
+
 	IF resFileFound = TRUE
-	
+
 		INIOPEN "data/systemInfos.ini"
-		
+
 			count = INIGET$("resolutions", "count")
-		
+
 			FOR tmp = 0 TO count - 1
-				
+
 				tmp$ = tmp
-				
+
 				name$ = "res_" + tmp$
-				
+
 				content$ = INIGET$("resolutions", name$)
-				
+
 				SPLITSTR(content$, resolutions$[], ";")
-				
-				addScreenResolutionToList(resolutions$[0], resolutions$[1])
-				
+
+				system_addScreenResolutionToList(resolutions$[0], resolutions$[1])
+
 			NEXT
-		
+
 		INIOPEN ""
 
 	ENDIF
-	
+
 	optionsFound = DOESFILEEXIST(path$ + "/" + "options.ini")
-	
+
 	IF optionsFound = FALSE
-		
+
 		INIOPEN path$ + "/" + "options.ini"
-			
+
 			INIPUT "options", "resolution_x", "1024"
 			INIPUT "options", "resolution_y", "768"
 			INIPUT "options", "fullscreen", "0"
-			
+
 		INIOPEN ""
-		
+
 		optionsFound = TRUE
-	
+
 	ENDIF
-	
+
 	IF optionsFound = TRUE
-		
+
 		INIOPEN path$ + "/" + "options.ini"
-			
+
 			resX = INIGET$("options", "resolution_x")
 			resY = INIGET$("options", "resolution_y")
-			
-			FOREACH s IN screenResolutions[]
-				
-				IF resX = s.x AND resY = s.y
-					BREAK
-				ENDIF
-				
-			NEXT
-			
+			full = INIGET$("options", "fullscreen")
+
 		INIOPEN ""
-	
+		
+		FOREACH s IN screenResolutions[]
+
+			IF resX = s.x AND resY = s.y
+				resFound = TRUE
+				BREAK
+			ENDIF
+
+		NEXT
+		
+		IF resFound = FALSE
+			system.resolution_x = 1024
+			system.resolution_y = 768
+			system.fullscreen = FALSE
+			
+			INIOPEN path$ + "/" + "options.ini"
+				INIPUT "options", "resolution_x", system.resolution_x
+				INIPUT "options", "resolution_y", system.resolution_y
+				INIPUT "options", "fullscreen", system.fullscreen
+			INIOPEN ""	
+			
+		ENDIF
+		
+		IF resFound = TRUE
+			system.resolution_x = resX
+			system.resolution_y = resY
+			system.fullscreen = full
+		ENDIF
+
+		SETSCREEN system.resolution_x, system.resolution_y, system.fullscreen
+
 	ENDIF
-	
+
 	DEBUG optionsFound
-	
+
 
 
 ENDFUNCTION
 
-FUNCTION addScreenResolutionToList: resX, resY
+FUNCTION system_addScreenResolutionToList: resX, resY
 LOCAL s AS screenResolutions_TYPE
-	
+
 	s.x = resX
 	s.y = resY
-	
+
 	DIMPUSH screenResolutions[], s
 
 ENDFUNCTION
-
-// Resolution List
-//1024	×	768
-//1024	×	800
-//1024	×	1024
-//1080	×	1200
-//1120	×	832
-//1152	×	720
-//1152	×	768
-//1152	×	864
-//1152	×	900
-//1280	×	720
-//1280	×	768
-//1280	×	800
-//1280	×	854
-//1280	×	960
-//1280	×	1024
-//1334	×	750
-//1366	×	768
-//1400	×	1050
-//1440	×	900
-//1440	×	900
-//1440	×	960
-//1440	×	1024
-//1440	×	1080
-//1600	×	768
-//1600	×	900
-//1600	×	1024
-//1600	×	1200
-//1600	×	1280
-//1680	×	1050
-//1776	×	1000
-//1920	×	1080
