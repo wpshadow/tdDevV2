@@ -1,0 +1,89 @@
+// --------------------------------- //
+// Project: AnimHelper
+// Start: Tuesday, May 23, 2017
+// IDE Version: 14.497
+
+
+// SETCURRENTDIR("Media") // go to media files
+
+GLOBAL count, resX, resY
+
+main()
+
+FUNCTION main:
+
+	loader()
+	calcSprite()
+
+	LOADANIM "media/sprite.png", 1000, resX, resY
+
+	WHILE TRUE
+
+		drawAnimation()
+
+		SHOWSCREEN
+	WEND
+
+ENDFUNCTION
+
+FUNCTION loader:
+LOCAL tmp, tmp$, name$, info$
+
+	INIOPEN "media/files.ini"
+
+		count = INIGET$("files", "count")
+		resX = INIGET$("files", "resX")
+		resY = INIGET$("files", "resY")
+
+		FOR tmp = 0 TO count - 1
+
+			tmp$ = tmp
+
+			name$ = "file_" + tmp$
+
+			info$ = INIGET$("files", name$)
+
+			LOADSPRITE info$, tmp
+
+		NEXT
+
+	INIOPEN ""
+
+ENDFUNCTION
+
+FUNCTION calcSprite:
+LOCAL tmp
+
+	FOR tmp = 0 TO count - 1
+
+		DRAWSPRITE tmp, 0 + (resX * tmp), 0
+
+	NEXT
+	
+
+	GRABSPRITE 999, 0, 0, resX * count, resY
+
+	SAVESPRITE "media/sprite.png", 999
+
+
+ENDFUNCTION
+
+FUNCTION drawAnimation:
+STATIC pic, oldtimer
+
+	IF GETTIMERALL() >= oldtimer
+		
+		INC pic, 1
+		
+		IF pic > count - 1
+			pic = 0
+		ENDIF
+		
+		oldtimer = GETTIMERALL() + 500
+	ENDIF
+	
+	PRINT "Bild: " + pic, 0, resY + 16, 5
+	
+	DRAWANIM 1000, pic, 0, 0
+
+ENDFUNCTION

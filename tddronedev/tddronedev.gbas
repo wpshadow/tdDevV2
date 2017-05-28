@@ -5,3 +5,246 @@
 
 
 // SETCURRENTDIR("Media") // go to media files
+
+TYPE screenResolutions_TYPE
+	x
+	y
+ENDTYPE
+
+TYPE mouse_TYPE
+	x
+	y
+	b1
+	b2
+	b1_press
+	b2_press
+
+	FUNCTION getX:
+		RETURN self.x
+	ENDFUNCTION
+
+	FUNCTION getY:
+		RETURN self.y
+	ENDFUNCTION
+
+ENDTYPE
+
+TYPE system_TYPE
+	resolution_x
+	resolution_y
+	fullscreen
+ENDTYPE
+
+GLOBAL mouse AS mouse_TYPE, screenResolutions[] AS screenResolutions_TYPE, system AS system_TYPE
+
+main()
+
+FUNCTION main:
+
+	system_basicInitial()
+	system_loadOptions()
+
+	WHILE TRUE
+
+		system_mouse()
+
+
+
+		SHOWSCREEN
+	WEND
+
+ENDFUNCTION
+
+FUNCTION system_:
+// ===================================
+// ##### #   # ##### ##### ##### ## ##
+// #      # #  #       #   #     # # #
+// #####   #   #####   #   ##### # # #
+//     #   #       #   #   #     # # #
+// #####   #   #####   #   ##### # # #
+// ===================================
+ENDFUNCTION
+
+FUNCTION system_basicInitial:
+
+	AUTOPAUSE FALSE
+	SYSTEMPOINTER TRUE
+
+ENDFUNCTION
+
+FUNCTION system_mouse:
+// ==================
+// Mouse Routine v1.3
+// ==================
+LOCAL x, y, b1, b2, b1_press, b2_press
+STATIC b1_tmp, b2_tmp, press_init, press_timer_old
+
+
+
+	MOUSESTATE x, y, b1_press, b2_press
+
+		mouse.x = x
+		mouse.y = y
+
+	IF b1_press = FALSE
+		b1 = FALSE
+		press_init = FALSE
+	ENDIF
+	IF b1_press = TRUE
+		b1_tmp = TRUE
+		IF press_init = FALSE
+			press_timer_old = GETTIMERALL() + 500
+			press_init = TRUE
+		ENDIF
+	ENDIF
+	IF b1_press = FALSE AND b1_tmp = TRUE AND GETTIMERALL() <= press_timer_old
+		b1 = TRUE
+		b1_tmp = FALSE
+	ENDIF
+
+	IF b2_press = FALSE THEN b2 = FALSE
+	IF b2_press = TRUE THEN b2_tmp = TRUE
+	IF b2_press = FALSE AND b2_tmp = TRUE
+		b2 = TRUE
+		b2_tmp = FALSE
+	ENDIF
+
+	mouse.b1 = b1
+	mouse.b2 = b2
+	mouse.b1_press = b1_press
+	mouse.b2_press = b2_press
+
+ENDFUNCTION
+
+FUNCTION system_fpsCounter:
+LOCAL dtime, fps, delay, showfps
+
+	 dtime = GETTIMER()
+
+ fps = ((1000/dtime))
+ delay=delay+dtime
+ IF delay>500 // 1/2 sec
+  delay=0
+  showfps=fps
+ ENDIF
+
+ PRINT "FPS: "+showfps+" dtime:"+dtime, 0,0
+ //PRINT actual,0,50
+
+ENDFUNCTION
+
+FUNCTION system_loadOptions:
+LOCAL path$, pathFound, resFileFound
+LOCAL count, tmp, tmp$, name$, content$, resolutions$[]
+LOCAL optionsFound, resX, resY, resFound, full
+
+	path$ = PLATFORMINFO$("DOCUMENTS") + "/tdDrone"
+
+	pathFound = DOESDIREXIST(path$)
+
+	IF pathFound = FALSE
+
+		CREATEDIR(path$)
+		pathFound = DOESDIREXIST(path$)
+
+	ENDIF
+
+	resFileFound = DOESFILEEXIST("data/systemInfos.ini")
+
+	IF resFileFound = TRUE
+
+		INIOPEN "data/systemInfos.ini"
+
+			count = INIGET$("resolutions", "count")
+
+			FOR tmp = 0 TO count - 1
+
+				tmp$ = tmp
+
+				name$ = "res_" + tmp$
+
+				content$ = INIGET$("resolutions", name$)
+
+				SPLITSTR(content$, resolutions$[], ";")
+
+				system_addScreenResolutionToList(resolutions$[0], resolutions$[1])
+
+			NEXT
+
+		INIOPEN ""
+
+	ENDIF
+
+	optionsFound = DOESFILEEXIST(path$ + "/" + "options.ini")
+
+	IF optionsFound = FALSE
+
+		INIOPEN path$ + "/" + "options.ini"
+
+			INIPUT "options", "resolution_x", "1024"
+			INIPUT "options", "resolution_y", "768"
+			INIPUT "options", "fullscreen", "0"
+
+		INIOPEN ""
+
+		optionsFound = TRUE
+
+	ENDIF
+
+	IF optionsFound = TRUE
+
+		INIOPEN path$ + "/" + "options.ini"
+
+			resX = INIGET$("options", "resolution_x")
+			resY = INIGET$("options", "resolution_y")
+			full = INIGET$("options", "fullscreen")
+
+		INIOPEN ""
+		
+		FOREACH s IN screenResolutions[]
+
+			IF resX = s.x AND resY = s.y
+				resFound = TRUE
+				BREAK
+			ENDIF
+
+		NEXT
+		
+		IF resFound = FALSE
+			system.resolution_x = 1024
+			system.resolution_y = 768
+			system.fullscreen = FALSE
+			
+			INIOPEN path$ + "/" + "options.ini"
+				INIPUT "options", "resolution_x", system.resolution_x
+				INIPUT "options", "resolution_y", system.resolution_y
+				INIPUT "options", "fullscreen", system.fullscreen
+			INIOPEN ""	
+			
+		ENDIF
+		
+		IF resFound = TRUE
+			system.resolution_x = resX
+			system.resolution_y = resY
+			system.fullscreen = full
+		ENDIF
+
+		SETSCREEN system.resolution_x, system.resolution_y, system.fullscreen
+
+	ENDIF
+
+	DEBUG optionsFound
+
+
+
+ENDFUNCTION
+
+FUNCTION system_addScreenResolutionToList: resX, resY
+LOCAL s AS screenResolutions_TYPE
+
+	s.x = resX
+	s.y = resY
+
+	DIMPUSH screenResolutions[], s
+
+ENDFUNCTION
